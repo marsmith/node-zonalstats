@@ -1,5 +1,5 @@
 {
-  "name": "turf-node-example",
+  "name": "node-zonalstats",
   "version": "1.0.0",
   "description": "an example of using turf with node to run a simple processing script",
   "main": "index.js",
