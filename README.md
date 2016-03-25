@@ -7,5 +7,5 @@ for now depends on python rasterstats
 ```
 sudo apt-get install python-numpy python-gdal
 sudo apt-get install python-numpy libgdal1h gdal-bin libgdal-dev
-pip install rasterstats
+sudo pip install rasterstats
 ```
