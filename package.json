@@ -1,0 +1,26 @@
+{
+  "name": "turf-node-example",
+  "version": "1.0.0",
+  "description": "an example of using turf with node to run a simple processing script",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "turf",
+    "node",
+    "example",
+    "turfjs",
+    "gis",
+    "geospatial"
+  ],
+  "author": "Martyn Smith",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "gdal": "^0.8.0",
+    "turf": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
