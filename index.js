@@ -18,8 +18,8 @@ var fs = require('fs');
 var express = require('express');
 var bodyParser = require('body-parser');
 var gdal = require("gdal");
+var PythonShell = require('python-shell');
 
-/*
 //set up express
 var app = express();
 
@@ -27,15 +27,70 @@ var app = express();
 app.use(bodyParser.json());
 
 app.post('/', function(request, response){
-  var convexHull = turf.convex(request.body);
-  console.log(JSON.stringify(convexHull));      // display on console
-  response.send(convexHull);    // echo the result back
+
+    var parsed = request.body;
+    var geogeom = JSON.stringify(parsed.featurecollection[1].feature.features[0].geometry);
+    var polygon = gdal.open(geogeom)
+    
+    //var parsed = fs.readFileSync("input/GlobalWatershed.geojson");
+    //parsed = JSON.parse(randomPoints);
+    //var geogeom = JSON.stringify(parsed.featurecollection[1].feature.features[0].geometry);
+    //var polygon = gdal.open(geogeom)
+    //results: ["[{'count': 2, 'max': 47.399497985839844, 'mean': 47.368446350097656, 'min': 47.33739471435547}]"]
+
+    //var polygon = gdal.open("input/GlobalWatershed.shp")
+    //results: ["[{'count': 2, 'max': 47.399497985839844, 'mean': 47.368446350097656, 'min': 47.33739471435547}]"]
+
+    //make sure we have a valid input
+    var polygonDriver = polygon.driver;
+    var polygonDriver_metadata = polygonDriver.getMetadata();
+    if (polygonDriver_metadata['DCAP_VECTOR'] !== 'YES') {
+        console.error('Source file is not a vector');
+        return;
+    }
+    console.log('\nPolygon Driver: ' + polygonDriver.description);
+    
+    var raster = gdal.open("input/test.tif");
+
+    //make sure we have a raster
+    var rasterDriver = raster.driver;
+    var rasterDriver_metadata = rasterDriver.getMetadata();
+    if (rasterDriver_metadata['DCAP_RASTER'] !== 'YES') {
+        console.error('Source file is not a raster');
+        return;
+    }
+    console.log('\nRaster driver: ' + rasterDriver.description);
+
+    var layer = polygon.layers.get(0);
+    var feature = layer.features.next();
+    var geom = feature.getGeometry();
+    var input = geom.transformTo(raster.srs);
+    input = geom.toJSON();
+    //console.log(input)
+
+
+    var options = {
+    args: [input, "input/test.tif"]
+    };
+
+    PythonShell.run('runStats.py', options, function (err, results) {
+    if (err) throw err;
+    // results is an array consisting of messages collected during executionmat result
+    console.log(results[0]);
+    response.status(200).send(results[0]);    // echo the result back
+    });
+    
 });
 
 app.listen(3000);
-*/
 
 
+
+
+
+// ---------------------------------------------
+/*  NODE-GDAL SOLUTION
+// ---------------------------------------------
 
 var raster = gdal.open("input/test.tif");
 
@@ -79,10 +134,10 @@ console.log('\nPolygon Driver: ' + polygonDriver.description);
 
 var layer = polygon.layers.get(0);
 
-/*console.log("number of features: " + layer.features.count());
+console.log("number of features: " + layer.features.count());
 console.log("fields: " + layer.fields.getNames());
 console.log("extent: " + JSON.stringify(layer.extent));
-console.log("srs: " + (layer.srs ? layer.srs.toWKT() : 'null'));*/
+console.log("srs: " + (layer.srs ? layer.srs.toWKT() : 'null'));
 
 
 var feature = layer.features.next();
@@ -120,9 +175,10 @@ target_ds.srs = raster.srs;
 console.log("\ntarget raster: ", target_ds)
 
 // rasterize zone polygon to raster
-gdal.rasterizelayer(target_ds, [1], layer, burn_values=[1])
+//gdal.rasterizelayer(target_ds, [1], layer, burn_values=[1])
 
-/* 
+*/
+/*
 
     # rasterize zone polygon to raster
     gdal.RasterizeLayer(target_ds, [1], lyr, burn_values=[1])
