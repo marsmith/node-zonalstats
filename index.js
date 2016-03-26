@@ -137,8 +137,6 @@ app.post('/precip', function(request, response){
 
 app.listen(3000);
 
-
-
 // ---------------------------------------------
 /*  NODE-GDAL SOLUTION
 // ---------------------------------------------
