@@ -12,7 +12,6 @@ npm install
 for now depends on python rasterstats/linux
 
 ```
-sudo apt-get install python-numpy python-gdal
 sudo apt-get install python-numpy libgdal1h gdal-bin libgdal-dev
-sudo pip install rasterstats
+pip install rasterstats
 ```
