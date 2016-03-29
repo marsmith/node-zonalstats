@@ -4,13 +4,15 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var gdal = require("gdal");
 var PythonShell = require('python-shell');
+var validateJSON = require('./validateJSON')
 var router = express.Router();
 
-/* GET users listing. */
-router.post('/', function(req, res, next) {
+router.post('/', validateJSON, function(req, res, next) {
     
-    var parsed = req.body;
-    var geogeom = JSON.stringify(parsed.featurecollection[1].feature.features[0].geometry);
+    //req.body is already verified by using express bodyParser
+    var parsed = req.filtered ;
+    console.log(JSON.stringify(parsed));
+    var geogeom = JSON.stringify(parsed.features[0].geometry);
     var polygon = gdal.open(geogeom)
     
     var rasterSource = "../data/nlcd2001lu/nlcd_2011_landcover_2011_edition_2014_10_10.img"
@@ -32,6 +34,7 @@ router.post('/', function(req, res, next) {
     var rasterDriver_metadata = rasterDriver.getMetadata();
     if (rasterDriver_metadata['DCAP_RASTER'] !== 'YES') {
         console.error('Source file is not a raster');
+        
         return;
     }
     console.log('\nRaster driver: ' + rasterDriver.description);

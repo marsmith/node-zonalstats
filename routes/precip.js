@@ -4,10 +4,11 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var gdal = require("gdal");
 var PythonShell = require('python-shell');
+var validateJSON = require('./validateJSON')
 var router = express.Router();
 
 /* GET users listing. */
-router.post('/', function(req, res, next) {
+router.post('/', validateJSON, function(req, res, next) {
     var parsed = req.body;
     var geogeom = JSON.stringify(parsed.featurecollection[1].feature.features[0].geometry);
     var polygon = gdal.open(geogeom)

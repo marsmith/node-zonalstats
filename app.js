@@ -6,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var landuse = require('./routes/landuse');
 var precip = require('./routes/precip');
 
@@ -25,7 +24,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
 app.use('/landuse', landuse);
 app.use('/precip', precip);
 
@@ -42,11 +40,17 @@ app.use(function(req, res, next) {
 // will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
+    console.log(err.message);
     res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
+    
+    //bypass commented out jade template for error reporting
+    res.send({error: err.message});
+    
+    //bypass 
+    /*res.render('error', {
+        message: err.message,
+        error: err
+    });*/
   });
 }
 
