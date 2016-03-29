@@ -9,14 +9,10 @@ var router = express.Router();
 
 router.post('/', validateJSON, function(req, res, next) {
     
-    //req.body is already verified by using express bodyParser
-    var parsed = req.filtered ;
-    console.log(JSON.stringify(parsed));
-    var geogeom = JSON.stringify(parsed.features[0].geometry);
-    var polygon = gdal.open(geogeom)
-    
+    //filtered is already verified by using express bodyParser
+    var polygon = gdal.open(JSON.stringify(req.filtered))
     var rasterSource = "../data/nlcd2001lu/nlcd_2011_landcover_2011_edition_2014_10_10.img"
-    
+        
     //make sure we have a valid input
     var polygonDriver = polygon.driver;
     var polygonDriver_metadata = polygonDriver.getMetadata();
@@ -25,8 +21,7 @@ router.post('/', validateJSON, function(req, res, next) {
         return;
     }
     console.log('\nPolygon Driver: ' + polygonDriver.description);
-    
-    //var raster = gdal.open("input/test.tif");
+      
     var raster = gdal.open(rasterSource);
     //console.log('\nCoordinate System of Raster is: ', raster.srs.toPrettyWKT());
     //make sure we have a raster
@@ -34,13 +29,14 @@ router.post('/', validateJSON, function(req, res, next) {
     var rasterDriver_metadata = rasterDriver.getMetadata();
     if (rasterDriver_metadata['DCAP_RASTER'] !== 'YES') {
         console.error('Source file is not a raster');
-        
         return;
     }
     console.log('\nRaster driver: ' + rasterDriver.description);
 
     var layer = polygon.layers.get(0);
+    console.log('layer', layer)
     var feature = layer.features.next();
+    console.log('feature', feature)
     var geom = feature.getGeometry();
     var input = geom.transformTo(raster.srs);
     input = geom.toJSON();

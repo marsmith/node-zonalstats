@@ -4,26 +4,32 @@ var router = express.Router();
 
 router.use('/', function(req, res, next) {   
     
-    var features;
+    var filteredGeometry;
     
-    //check for streamstats services formatted json
+    //first check for streamstats services formatted json
     if (req.body.workspaceID) {
         for (index in req.body.featurecollection) {
             if (req.body.featurecollection[index].name == 'globalwatershed') {
-                features = req.body.featurecollection[index].feature;
+                filteredGeometry= req.body.featurecollection[index].feature;
             }
             
         }
     } 
-    else features = req.body;
+    //otherwise just pass body in
+    else filteredGeometry = req.body;
 
-    //assume we now have geoJSON
-    if (features.type == "FeatureCollection") {
-        //make sure there is a polygon geometry by using turf.filter
-        var filtered = turf.filter(features, 'geometry', 'polygon')
-        console.log('filtered by turf')
+    //assume we now have geoJSON, now get polygon feature
+    if (filteredGeometry.type.toLowerCase() == "featurecollection") {
+        
+        for (index in filteredGeometry.features) {
+            //just grab first polygon feauture
+            if (filteredGeometry.features[index].geometry.type.toLowerCase() == "polygon") {
+                filteredGeometry = filteredGeometry.features[index].geometry;
+            }
+        }
+        
         req.filtered = {}
-        req.filtered  = filtered;
+        req.filtered  = filteredGeometry;
         next();
     }
     else {

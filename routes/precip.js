@@ -7,12 +7,10 @@ var PythonShell = require('python-shell');
 var validateJSON = require('./validateJSON')
 var router = express.Router();
 
-/* GET users listing. */
 router.post('/', validateJSON, function(req, res, next) {
-    var parsed = req.body;
-    var geogeom = JSON.stringify(parsed.featurecollection[1].feature.features[0].geometry);
-    var polygon = gdal.open(geogeom)
     
+    //filtered is already verified by using express bodyParser
+    var polygon = gdal.open(JSON.stringify(req.filtered))
     var rasterSource = "input/test.tif"
     
     //make sure we have a valid input
@@ -24,7 +22,6 @@ router.post('/', validateJSON, function(req, res, next) {
     }
     console.log('\nPolygon Driver: ' + polygonDriver.description);
     
-    //var raster = gdal.open("input/test.tif");
     var raster = gdal.open(rasterSource);
     //console.log('\nCoordinate System of Raster is: ', raster.srs.toPrettyWKT());
     //make sure we have a raster
