@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var landuse = require('./routes/landuse');
 var precip = require('./routes/precip');
+var region = require('./routes/region');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/landuse', landuse);
 app.use('/precip', precip);
+app.use('/region', region);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

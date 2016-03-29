@@ -43,7 +43,7 @@ router.post('/', validateJSON, function(req, res, next) {
     args: [input, rasterSource]
     };
 
-    PythonShell.run('rasterStatsContinuous.py', options, function (err, results) {
+    PythonShell.run('python/rasterStatsContinuous.py', options, function (err, results) {
         if (err) throw err;
         // results is an array consisting of messages collected during executionmat result
         var data = results[0].replace(/'/g, '').replace(/[{}]/g, "");
