@@ -43,7 +43,7 @@ router.post('/', validateJSON, function(req, res, next) {
     args: [input, rasterSource]
     };
 
-    PythonShell.run('python/rasterStatsCategorical.py', options, function (err, results) {
+    PythonShell.run('python/zonalStats.py', options, function (err, results) {
         if (err) throw err;
         // results is an array consisting of messages collected during executionmat result
         var data = results[0].replace(/'/g, '').replace(/[{}]/g, "");
