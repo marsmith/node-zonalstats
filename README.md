@@ -10,7 +10,8 @@ sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable && sudo apt-get update
 sudo apt-get install python-numpy libgdal1h gdal-bin libgdal-dev
 ```
 
-for now depends on python rasterstats/linux
+depends on python rasterstats/linux
 ```
+sudo apt-get install python pip
 sudo pip install rasterstats
 ```
