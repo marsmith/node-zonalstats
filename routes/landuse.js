@@ -11,7 +11,7 @@ router.post('/', validateJSON, function(req, res, next) {
     
     //filtered is already verified by using express bodyParser
     var polygon = gdal.open(JSON.stringify(req.filtered))
-    var rasterSource = "../data/nlcd2001lu/nlcd_2011_landcover_2011_edition_2014_10_10.img"
+    var rasterSource = "../data/nlcd_2011_landcover_2011_edition_2014_10_10/nlcd_2011_landcover_2011_edition_2014_10_10.img"
         
     //make sure we have a valid input
     var polygonDriver = polygon.driver;
@@ -43,7 +43,7 @@ router.post('/', validateJSON, function(req, res, next) {
     args: [input, rasterSource]
     };
 
-    PythonShell.run('python/zonalStats.py', options, function (err, results) {
+    PythonShell.run('python/rasterStatsCategorical.py', options, function (err, results) {
         if (err) throw err;
         // results is an array consisting of messages collected during executionmat result
         var data = results[0].replace(/'/g, '').replace(/[{}]/g, "");
