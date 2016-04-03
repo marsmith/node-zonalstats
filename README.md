@@ -12,6 +12,6 @@ sudo apt-get install python-numpy libgdal1h gdal-bin libgdal-dev
 
 depends on python rasterstats/linux
 ```
-sudo apt-get install python pip
+sudo apt-get install python-pip python-dev
 sudo pip install rasterstats
 ```
