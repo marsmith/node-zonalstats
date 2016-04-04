@@ -35,38 +35,53 @@ router.post('/', validateJSON, function(req, res, next) {
     console.log("WorkspaceID: ", req.body.workspaceID)
     
     region.layers.forEach(function(layer, i) {
-        if (layer.name.split('_')[1] == req.body.workspaceID.substring(0,2)) {
-            
-        var regionLayer = layer;
-            
-        //console.log('\nCoordinate System of region is: ', layer.srs.toPrettyWKT());
-        //make sure we have a region
-        var regionDriver = region.driver;
+        var regionID = req.body.workspaceID.substring(0,2);
+        if (layer.name.split('_')[1] == regionID) {
+                
+            var regionLayer = layer;
+                
+            //console.log('\nCoordinate System of region is: ', layer.srs.toPrettyWKT());
+            //make sure we have a region
+            var regionDriver = region.driver;
 
-        console.log('\nregion driver: ' + regionDriver.description);
+            console.log('\nregion driver: ' + regionDriver.description);
+            
+            var layer = polygon.layers.get(0);
+            var feature = layer.features.next();
+            var geom = feature.getGeometry();
+            var input = geom.transformTo(regionLayer.srs);
+            input = geom.toJSON();
+            //console.log('projected input geom: ',input);
         
-        var layer = polygon.layers.get(0);
-        var feature = layer.features.next();
-        var geom = feature.getGeometry();
-        //geom.transformTo(regionLayer.srs);
-        //console.log(geom.toJSON());
-    
-        var regionLayerFeature = regionLayer.features.next();
-        var regionLayerGeom = regionLayerFeature.getGeometry();
-        var wgs84 = gdal.SpatialReference.fromEPSG(4326);
-        regionLayerGeom.transformTo(wgs84);
-        //console.log(regionLayerGeom.toJSON())
-        //regionLayerGeom = regionLayerGeom.toJSON();
-        
-        //var intersection = geom.intersection(regionLayerGeom)           
-        var intersection = turf.intersect(geom.toJSON(),regionLayerGeom.toJSON());
-        
-        //var result = intersection.toJSON();
-        //console.log(JSON.stringify(result));
-        
-        
-        res.send(intersection)
+            //var regionLayerFeature = regionLayer.features.next();
+            //var regionLayerGeom = regionLayerFeature.getGeometry();
+            //var wgs84 = gdal.SpatialReference.fromEPSG(4326);
+            //regionLayerGeom.transformTo(wgs84);
+            //console.log(regionLayerGeom.toJSON())
+            //regionLayerGeom = regionLayerGeom.toJSON();
+            
+            //var intersection = geom.intersection(regionLayerGeom)           
+            //var intersection = turf.intersect(geom.toJSON(),regionLayerGeom.toJSON());
+            
+            //var result = intersection.toJSON();
+            //console.log(JSON.stringify(result));
+            
+            var options = {
+            args: [input, regionID, regionSource]
+            };
 
+            PythonShell.run('python/percentOverlay.py', options, function (err, results) {
+
+                if (err) {
+                    console.log(JSON.stringify(err.stack))
+                    res.send(err.stack)
+
+                }
+                
+                console.log('results: ',results)
+                res.json(results)
+
+            });
         }
     })
          
