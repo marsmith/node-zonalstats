@@ -10,6 +10,8 @@ inputGeom = json.loads(sys.argv[1])
 regionID = sys.argv[2]
 regionSource = sys.argv[3]
 regionLayer = "regions_" + regionID
+inputBasin = '../data/inputBasin.geojson'
+inputClip = '../data/inputClip.geojson'
 
 #get coordinate system of region layer
 with fiona.open(regionSource, layer=regionLayer) as source:
@@ -17,13 +19,12 @@ with fiona.open(regionSource, layer=regionLayer) as source:
 
 #convert input projected geometry string to a temp shapefile
 schema = {'geometry': 'Polygon', 'properties': {'regionID' : 'str'}}
-with fiona.open('../data/test_fiona.shp','w',driver='ESRI Shapefile', crs=source_crs,schema= schema) as output:
-    geom = {'type': 'Point', 'coordinates': (5.0, 50.0)}
+with fiona.open(inputBasin,'w',driver='GeoJSON', crs=source_crs,schema= schema) as output:
     prop = {'regionID': regionID}
     output.write({'geometry':inputGeom, 'properties': prop})
    
 #get total area 
-dataset = ogr.Open('../data/test_fiona.shp')
+dataset = ogr.Open(inputBasin)
 layer = dataset.GetLayer()
 
 totalArea = ''
@@ -33,16 +34,16 @@ for feature in layer:
     totalArea = area
     
 try:
-    os.remove('../data/inputClip.geojson')
+    os.remove(inputClip)
 except OSError:
     pass
 
 # Clipping process
-subprocess.call(['ogr2ogr', '-f', 'GeoJSON', '-clipsrc', '../data/test_fiona.shp', '../data/inputClip.geojson', regionSource, regionLayer])
+subprocess.call(['ogr2ogr', '-f', 'GeoJSON', '-clipsrc', inputBasin, inputClip, regionSource, regionLayer])
 
 #do area percent calculations
 output = []
-dataset = ogr.Open('../data/inputClip.geojson')
+dataset = ogr.Open(inputClip)
 layer = dataset.GetLayer()
 
 for feature in layer:
