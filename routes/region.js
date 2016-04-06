@@ -1,11 +1,7 @@
-var turf = require('turf');
-var fs = require('fs');
 var express = require('express');
-var bodyParser = require('body-parser');
-var gdal = require("gdal");
-var PythonShell = require('python-shell');
-var validateJSON = require('./validateJSON')
 var router = express.Router();
+var gdal = require("gdal");
+var validateJSON = require('./validateJSON')
 
 router.post('/', validateJSON, function(req, res, next) {
     
@@ -61,17 +57,12 @@ router.post('/', validateJSON, function(req, res, next) {
                         output.push({"name":name,"code":gridcode,"percent":(intersectArea/totalArea)*100})
                     }
                 })
-
-
-    
             });
-
-
-            res.json(output)
-
-            
         }
     })
+    
+    //send output
+    res.json(output)    
 });
 
 module.exports = router;
