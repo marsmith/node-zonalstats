@@ -46,7 +46,9 @@ router.post('/', validateJSON, function(req, res, next) {
                 inputLayer.features.forEach(function(inputFeature, i) {
                     var inputGeom = inputFeature.getGeometry();
                     
+                    //project input geometry
                     inputGeom.transformTo(regionLayer.srs);
+                    
                     if (inputGeom.intersects(regionGeom)) {
                         console.log('Found an intersection: ', name)
                         
