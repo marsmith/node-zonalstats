@@ -38,6 +38,7 @@ router.post('/', validateJSON, function(req, res, next) {
     var geom = feature.getGeometry();
     var input = geom.transformTo(raster.srs);
     input = geom.toJSON();
+    console.log(input)
 
     var options = {
     args: [input, rasterSource]

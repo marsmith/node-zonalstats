@@ -20,72 +20,58 @@ router.post('/', validateJSON, function(req, res, next) {
     
     //filtered is already verified by using express bodyParser
     var polygon = gdal.open(JSON.stringify(req.filtered))
-    var regionSource = "../data/SS_regionPolys.gdb"
+    var regionSource = "input/SS_regionPolys.gdb"
     
     //make sure we have a valid input
     var polygonDriver = polygon.driver;
-    var polygonDriver_metadata = polygonDriver.getMetadata();
-    if (polygonDriver_metadata['DCAP_VECTOR'] !== 'YES') {
-        console.error('Source file is not a vector');
-        return;
-    }
     console.log('\nPolygon Driver: ' + polygonDriver.description);
     
     var region = gdal.open(regionSource);
     console.log("WorkspaceID: ", req.body.workspaceID)
     
+    var output = [];
+    
     region.layers.forEach(function(layer, i) {
         var regionID = req.body.workspaceID.substring(0,2);
         if (layer.name.split('_')[1] == regionID) {
-                
-            var regionLayer = layer;
-                
-            //console.log('\nCoordinate System of region is: ', layer.srs.toPrettyWKT());
-            //make sure we have a region
-            var regionDriver = region.driver;
 
+            var regionDriver = region.driver;
+            var polygonDriver_metadata = polygonDriver.getMetadata();
             console.log('\nregion driver: ' + regionDriver.description);
             
-            var layer = polygon.layers.get(0);
-            var feature = layer.features.next();
-            var geom = feature.getGeometry();
-            var input = geom.transformTo(regionLayer.srs);
-            input = geom.toJSON();
-            //console.log('projected input geom: ',input);
-        
-            //var regionLayerFeature = regionLayer.features.next();
-            //var regionLayerGeom = regionLayerFeature.getGeometry();
-            //var wgs84 = gdal.SpatialReference.fromEPSG(4326);
-            //regionLayerGeom.transformTo(wgs84);
-            //console.log(regionLayerGeom.toJSON())
-            //regionLayerGeom = regionLayerGeom.toJSON();
-            
-            //var intersection = geom.intersection(regionLayerGeom)           
-            //var intersection = turf.intersect(geom.toJSON(),regionLayerGeom.toJSON());
-            
-            //var result = intersection.toJSON();
-            //console.log(JSON.stringify(result));
-            
-            var options = {
-            args: [input, regionID, regionSource]
-            };
+            var regionLayer = layer;
 
-            PythonShell.run('python/percentOverlay.py', options, function (err, results) {
-
-                if (err) {
-                    console.log(JSON.stringify(err.stack))
-                    res.send(err.stack)
-
-                }
+            regionLayer.features.forEach(function(regionFeature, i) { 
+                var regionGeom = regionFeature.getGeometry();
+                name = regionFeature.fields.get("Name")
+                gridcode = regionFeature.fields.get("GRIDCODE")
                 
-                console.log('results: ',results)
-                res.json(results)
+                var inputLayer = polygon.layers.get(0);
+                inputLayer.features.forEach(function(inputFeature, i) {
+                    var inputGeom = inputFeature.getGeometry();
+                    
+                    inputGeom.transformTo(regionLayer.srs);
+                    if (inputGeom.intersects(regionGeom)) {
+                        console.log('Found an intersection: ', name)
+                        
+                        var intersection = inputGeom.intersection(regionGeom)
+                        var intersectArea = intersection.getArea();
+                        var totalArea = inputGeom.getArea();
+                        console.log('[intersectArea,totalArea]: ', intersectArea,totalArea)
+                        output.push({"name":name,"code":gridcode,"percent":(intersectArea/totalArea)*100})
+                    }
+                })
 
+
+    
             });
+
+
+            res.json(output)
+
+            
         }
     })
-         
-
 });
 
 module.exports = router;
